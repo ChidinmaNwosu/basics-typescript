@@ -202,7 +202,9 @@ Typescript => statically typed => what the code is expected to do before it runs
 <br/>
 <br/>
 
-#### **STATIC TYPE CHECKING**
+---
+
+## STATIC TYPE CHECKING
 let us this back to the error(bug) we got trying to call our message variable as a function! Typescript is a tool that helps us find the bugs before we run our code, hence, it is a static type checker.
   Eg:
 ```typescript
@@ -273,7 +275,159 @@ if (value !== "a"){
 }
 //Error message: This comparism appears to be unintentional beacuse 'a' and 'b' have no overlap
 ```
----
-hideInToc:true
+
 ---
 
+# TYPES FOR TOOLING
+<v-click>
+Typescript can catch bugs when we make mistakes with our code. Typescript can also prevent us from making those mistakes in the first place. The type-checker makes sure we are accessing the right properties on variables, and  it can also suggest properties we might use or want to use.
+</v-click>
+<br />
+<v-click>
+Typescript takes tooling seriously, it goes beyond **completions** and *error* as you type. Examples of tools in Typescript are:
+</v-click> 
+
+- tsc: helps you compile a javascript file that is a replica of the Typescript file.
+- typescript language service: it provides auto-completion, type checking, error highlighting in editors
+- tsconfig.json: allows you configure your own tsc option for your project.
+- Type definitions(.d.ts files): provides you with info about existing Javascript libraries and API's
+
+---
+
+# TSC-TYPESCRIPT COMPILER
+
+Step 1: Create a folder 
+```
+mkdir typescript-practice
+```
+Step 2: Change into that directory
+```
+cd typescript-practice
+```
+Step 3:This installs tsc globally, we can use **npx** or similar tools if you'd prefer to run **tsc** from a **local node_modules package** instead.
+```
+npm install -g typescript
+```
+Step 4: Create a file called **hello.ts**, our first typecsript program
+```
+console.log("Hello, World!"); 
+//Greets the world
+```
+---
+
+Step 5: Let us type check it using **command tsc**
+```
+tsc hello.ts
+```
+Step 6:let us introduce a type checking error to our **hello.ts file**
+```typescript
+function greet(person, date){
+  console.log(`Hello ${person}, today is ${date}!`);
+}
+greet("chidinma");
+```
+
+Step 7:If we run our command tsc, we will get an error
+```
+tsc hello.ts
+
+Expected 2 arguemnts, but got 1
+```
+
+---
+
+# EMITTING WITH ERRORS
+The --noEmitOnError flag affects the behaviour of the tsc. It disables emitting files if any type checking errors are reported. It instructs typecript not to emit any output files (eg Javascript source code) if there are any errors during the compilation process. How do we enable it?
+```
+noEmitOnError: true,
+```
+or:
+```
+tsc --noEmitOnError hello.ts
+```
+
+---
+
+# EXPLICIT TYPES
+Till this very moment we haven't told TypeScript what "person" and "date" is. **Person** is a string and **date* is should be a Date object. We can use some methods(toString()method) on our date parameter. For example:
+```typescript
+function greet(person:string, date: Date){
+   console.log(`Hello ${person}, today is ${date.toDateString()}!`);
+}
+```
+We added type annotations(:) to 'person' and 'date' to describe what type of value greet can be called with.
+<br/>
+<br/>
+If we call our greet function like this, an error will be thrown:
+```typescript
+greet("Chidinma", Date());
+// Argument type 'string' is not assignable to paramater of type 'Date'
+```
+Calling Date() in javascript returns a 'string' while constructing a Date with new Date() actually gives what we are expecting(an object). To fix the error, we do this:
+
+```typescript
+function greet(person:string, date: Date){
+  console.log(`Hello ${person}, today is ${date.toDateString()}!`);
+}
+//call our greet function
+greet("Chidinma", new Date());
+```
+Note: We don't always have to write explicit type annotations, in many cases typescript can just infer(figure out) the types for us, even if we omit them, Eg:
+
+```typescript
+let msg = "hello, there!";
+// let msg:string
+```
+
+---
+
+# ERASED TYPES 
+What happens when you compile the above function to JavaScript using tsc ?
+```javascript
+'use strict';
+function greet(person, date){
+  //it stripped our type annotations
+  console.log('Hello'.concat(person, 'today is').concat(date.toDateString(), '!'));
+  //our template strings was converted to plain strings with concatenations.
+}
+
+greet('chidinma', new Date());
+```
+
+NB:Type annotations aren't a part of JavaScript/ECMAScript.
+
+---
+
+# DOWNLEVELING
+Another thing to note is the own template string was rewritten from:
+
+```typescript
+`Hello ${person}, today is ${date.toDateString()}!`;
+```
+to:
+```typescript
+"Hello".concat(person, "today is").concat(date.toDateString(), "!");
+```
+
+##### WHY?
+Template strings are a feature from a version of ECMAScript called ECMAScript 2015/ ECMASCript 6/ ES2015/ ES6.
+<br/>
+Typescript has the ability to rewrite code from a newer version of ECMAScript to an older one like: ECMAScript 3 or ECMAScript 5(ES3 and ES5 rwspectively).
+ <br/>
+This ability is called downleveling. By default, typescript targets ES3, to stop this default behaviour, we can do this:
+
+```typescript
+tsc ---target es2015 hello.ts
+//change target option
+```
+
+---
+
+# STRICTNESS
+In typescript, types are optional, you can opt for a loose-type check or a strict-type check. Typescript has several typechecking strictness flags that you can turn on and off using a boolean value. For example:
+- The strict flag in the CLI
+- "strict": true; in the tsconfig
+- noImplicitAny: assigns the (:any) type to 'null' and 'undefined'.
+- strictNullChecks: treats 'null' and 'undefined' as distinct types, so it raises an alarm or throws an error when we try to use null or undefined where a concrete value is expected.
+
+NOTE: In our tsconfig.json file,we can assign a boolean value of 'true' to our noImplicitAny and strictNullChecks to activate them.
